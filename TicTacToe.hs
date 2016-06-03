@@ -19,12 +19,12 @@ showMaybePlayer (Just p)  = show p
 showBoard :: Board -> String
 showBoard [[]] = ""
 showBoard b    = foldl
-              (\acc xs -> acc ++ '\n': foldl (\acc x -> acc ++ x ++ "|") "|" (map showMaybePlayer xs) ++ '\n':horizontalLine)
-              horizontalLine
-              b
-              where
-                horizontalLine :: String
-                horizontalLine = '+' : take ((length $ b !! 0)*2) (cycle "-+")
+                   (\acc xs -> acc ++ '\n': foldl (\acc x -> acc ++ x ++ "|") "|" (map showMaybePlayer xs) ++ '\n':horizontalLine)
+                   horizontalLine
+                   b
+                   where
+                     horizontalLine :: String
+                     horizontalLine = '+' : take ((length $ b !! 0)*2) (cycle "-+")
 
 change :: Int -> (a -> a) -> [a] -> [a]
 change _ _ [] = []
