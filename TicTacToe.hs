@@ -1,12 +1,28 @@
+import Data.Maybe
+
 data Player = X | O deriving (Eq, Show, Read)
 
+-- | Boards can have any rectangular dimensions
 type Board = [[Maybe Player]]
 
 type Pos = (Int, Int)
 
 showMaybePlayer :: Maybe Player -> String
-showMaybePlayer Nothing = " "
-showMaybePlayer (Just p)  = show p
+showMaybePlayer Nothing  = " "
+showMaybePlayer (Just p) = show p
+
+-- | intersperse (from Data.List) with the seperator also on both sides.
+intersperseAll :: a -> [a] -> [a]
+intersperseAll sep []     = [sep]
+intersperseAll sep (x:xs) = sep : x : intersperseAll sep xs
+
+intercalateAll :: [a] -> [[a]] -> [a]
+intercalateAll xs xss = concat (intersperseAll xs xss)
+
+innerLength :: [[a]] -> Int
+innerLength xs
+  | null xs = 0
+  | otherwise = length $ head xs
 
 -- |Shows a board on a genral form like this:
 -- +-+-+-+
@@ -17,14 +33,15 @@ showMaybePlayer (Just p)  = show p
 -- | |X|O|
 -- +-+-+-+
 showBoard :: Board -> String
-showBoard [[]] = ""
-showBoard b    = foldl
-                   (\acc xs -> acc ++ '\n': foldl (\acc x -> acc ++ x ++ "|") "|" (map showMaybePlayer xs) ++ '\n':horizontalLine)
-                   horizontalLine
-                   b
-                   where
-                     horizontalLine :: String
-                     horizontalLine = '+' : take ((length $ b !! 0)*2) (cycle "-+")
+showBoard b = intercalateAll ('\n':sepLine) (map showLine b)
+                where
+                  width = innerLength b
+
+                  sepLine :: String
+                  sepLine = intersperseAll '+' (replicate width '-')
+
+                  showLine :: [Maybe Player] -> String
+                  showLine xs = '\n' : intercalateAll "|" (map showMaybePlayer xs)
 
 change :: Int -> (a -> a) -> [a] -> [a]
 change _ _ [] = []
@@ -32,12 +49,16 @@ change 0 f (x:xs) = f x : xs
 change n f (x:xs) = x : change (n-1) f xs
 
 set :: Int -> a -> [a] -> [a]
-set n e xs = change n (const e) xs
+set n e = change n (const e)
+
+inRange :: Int -> (Int, Int) -> Bool
+inRange x (start, end) = x `elem` [start..end]
 
 legalMove :: Pos -> Board -> Bool
 legalMove pos board
-  | (fst pos) `elem` [0..2] && (snd pos) `elem` [0..2] = False
-  | board !! snd pos !! fst pos /= Nothing = False
+  | not $ fst pos `inRange` (0, innerLength board-1)
+    &&    snd pos `inRange` (0, length board-1)     = False
+  | Data.Maybe.isJust (board !! snd pos !! fst pos) = False
   | otherwise = True
 
 placePlayer :: Pos -> Board -> Player -> Board
@@ -64,20 +85,18 @@ getMove board = do
     Nothing -> do
       putStrLn "Illegal move."
       getMove board
-    Just b  -> do
-      return $ b
-    
+    Just b  -> return b
+
 play :: Board -> IO ()
 play board = do
   putStrLn $ showBoard board
 
   let newBoard = getMove board
-  
   newBoard >>= play
 
+main :: IO ()
 main = do
   putStrLn "Welcome to TicTacToe!\n"
   putStrLn "To make a move, write a position on the form (x,y), where (0,0) is the top left position."
 
   play startBoard
-  
