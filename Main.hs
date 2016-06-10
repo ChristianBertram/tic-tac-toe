@@ -19,8 +19,15 @@ play :: Board -> IO ()
 play board = do
   putStrLn $ showBoard board
 
-  let newBoard = getMove board
-  newBoard >>= play
+  maybe
+    (if fullBoard board
+      then do
+        let newBoard = getMove board
+        newBoard >>= play
+      else putStrLn "It's a tie!"
+    )
+    (\x -> putStrLn $ show x ++ " won the game!")
+    (winner board)
 
 main :: IO ()
 main = do

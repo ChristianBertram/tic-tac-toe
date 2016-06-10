@@ -5,9 +5,13 @@ module Board
 , showBoard
 , legalMove
 , move
+, fullBoard
+, winner
 ) where
 
 import Data.Maybe
+import Data.List
+import Control.Applicative
 
 data Player = X | O deriving (Eq, Show, Read)
 
@@ -77,3 +81,34 @@ move :: Pos -> Board -> Player -> Maybe Board
 move pos board player
   | legalMove pos board = Just $ placePlayer pos board player
   | otherwise = Nothing
+
+fullBoard :: Board -> Bool
+fullBoard = all (all Data.Maybe.isJust)
+
+winner :: Board -> Maybe Player
+winner []     = Nothing
+winner board = horizontally <|> vertically <|> diagonally <|> diagonallyBack
+  where
+    full :: [Maybe Player] -> Maybe Player
+    full []          = Nothing
+    full list@(x:_) = if list == replicate (length list) x then x else Nothing
+
+    horizontally :: Maybe Player
+    horizontally = foldr ((<|>) . full) Nothing board
+
+    vertically :: Maybe Player
+    vertically = foldr ((<|>) . full) Nothing (transpose board)
+
+    slide :: Board -> Board
+    slide []     = []
+    slide (x:xs)
+      -- If it's taller than it's long, then turn it around
+      | length (x:xs) > length x = slide (transpose (x:xs))
+      -- Turn diagonal lines into straight vertical lines
+      | otherwise = take (length x - length (x:xs) + 1) x : slide (map (drop 1) xs)
+
+    diagonally :: Maybe Player
+    diagonally = foldr ((<|>) . full) Nothing (transpose $ slide board)
+
+    diagonallyBack :: Maybe Player
+    diagonallyBack = foldr ((<|>) . full) Nothing (transpose $ slide $ map reverse board)
