@@ -11,12 +11,11 @@ getMove board = do
   putStr "\nYour move: "
   pos <- getLine
 
-  let newBoard = move (read pos) board X
-  case newBoard of
-    Nothing -> do
-      putStrLn "Illegal move."
-      getMove board
-    Just b  -> return b
+  maybe retry return (move (read pos) board X)
+    where
+      retry = do
+        putStrLn "Illegal move."
+        getMove board
 
 play :: Board -> IO ()
 play board = do
