@@ -1,10 +1,8 @@
 import Board
 
-startBoard :: Board
-startBoard = [[Nothing, Nothing, Nothing]
-             ,[Nothing, Nothing, Nothing]
-             ,[Nothing, Nothing, Nothing]
-             ]
+emptyBoard :: Int -> Int -> Board
+emptyBoard _ 0 = []
+emptyBoard width height = replicate width Nothing : emptyBoard width (height-1)
 
 getMove :: Board -> IO Board
 getMove board = do
@@ -27,6 +25,12 @@ play board = do
 main :: IO ()
 main = do
   putStrLn "Welcome to TicTacToe!\n"
-  putStrLn "To make a move, write a position on the form (x,y), where (0,0) is the top left position."
 
-  play startBoard
+  putStrLn "How wide should the board be? (Write a whole number)"
+  width <- getLine
+  putStrLn "How tall should the board be? (Write a whole number)"
+  height <- getLine
+
+  putStrLn "\nTo make a move, write a position on the form (x,y), where (0,0) is the top left position."
+
+  play $ emptyBoard (read width) (read height)
