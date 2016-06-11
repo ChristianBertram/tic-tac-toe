@@ -21,10 +21,10 @@ play board = do
 
   maybe
     (if fullBoard board
-      then do
+      then putStrLn "It's a tie!"
+      else do
         let newBoard = getMove board
         newBoard >>= play
-      else putStrLn "It's a tie!"
     )
     (\x -> putStrLn $ show x ++ " won the game!")
     (winner board)
