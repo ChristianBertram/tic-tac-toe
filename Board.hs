@@ -4,7 +4,9 @@ module Board
 , Pos
 , showBoard
 , legalMove
+, innerLength
 , move
+, safeMove
 , fullBoard
 , winner
 ) where
@@ -81,6 +83,10 @@ move :: Pos -> Board -> Player -> Maybe Board
 move pos board player
   | legalMove pos board = Just $ placePlayer pos board player
   | otherwise = Nothing
+
+-- | If move is illegal, return original board
+safeMove :: Pos -> Board -> Player -> Board
+safeMove pos board player = fromMaybe board (move pos board player)
 
 fullBoard :: Board -> Bool
 fullBoard = all (all Data.Maybe.isJust)

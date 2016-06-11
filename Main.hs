@@ -1,4 +1,5 @@
 import Board
+import AI
 
 emptyBoard :: Int -> Int -> Board
 emptyBoard _ 0 = []
@@ -23,8 +24,9 @@ play board = do
     (if fullBoard board
       then putStrLn "It's a tie!"
       else do
-        let newBoard = getMove board
-        newBoard >>= play
+        let newBoard  = getMove board
+        let newBoard' = fmap getAIMove newBoard
+        newBoard' >>= play
     )
     (\x -> putStrLn $ show x ++ " won the game!")
     (winner board)
