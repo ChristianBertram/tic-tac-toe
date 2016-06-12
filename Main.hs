@@ -1,6 +1,9 @@
 import Board
 import AI
 
+import Data.Maybe
+import Text.Read
+
 emptyBoard :: Int -> Int -> Board
 emptyBoard _ 0 = []
 emptyBoard width height = replicate width Nothing : emptyBoard width (height-1)
@@ -10,11 +13,16 @@ getMove board = do
   putStr "\nYour move: "
   pos <- getLine
 
-  maybe retry return (move (read pos) board X)
-    where
-      retry = do
-        putStrLn "Illegal move."
-        getMove board
+  case readMaybe pos of
+    Nothing -> do
+      putStrLn "Invalid syntax."
+      getMove board
+    Just pos' ->
+      maybe retry return (move pos' board X)
+        where
+          retry = do
+            putStrLn "Illegal move."
+            getMove board
 
 play :: Board -> IO ()
 play board = do
